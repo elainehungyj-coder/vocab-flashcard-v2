@@ -1,0 +1,337 @@
+﻿﻿﻿﻿﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vocab Cards">
+<link rel="apple-touch-icon" href="icon-v2.png?v=3" />
+<title>Vocab-Flashcard</title>
+<style>
+:root{--bg:#faf9f7;--card:#fff;--primary:#2d5a8a;--accent:#38a0d4;--text:#1a1a1a;--text-light:#666;--border:#e0e0e0;--success:#4caf50;--danger:#e53935;--shadow:0 2px 12px rgba(0,0,0,0.08);--radius:16px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:18px;font-weight:600;color:var(--primary)}
+.book-tabs{display:flex;gap:8px;background:#f0f0f0;border-radius:10px;padding:3px}
+.book-tab{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#666;transition:all .2s}
+.book-tab.active{background:var(--card);color:var(--primary);box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+.container{padding:16px;flex:1;display:flex;flex-direction:column;gap:16px;max-width:600px;margin:0 auto;width:100%}
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 20px;border-radius:12px;border:none;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;background:var(--primary);color:white}
+.btn:active{transform:scale(0.96)}
+.btn.secondary{background:#f0f0f0;color:var(--text)}
+.btn.success{background:var(--success)}
+.btn-block{width:100%}
+.speaker-btn{width:64px;height:64px;border-radius:50%;background:var(--accent);border:none;color:white;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(56,160,212,0.4);transition:all .2s}
+.speaker-btn:active{transform:scale(0.9)}
+.group-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.group-card{background:var(--card);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;border:2px solid transparent;box-shadow:var(--shadow);transition:all .2s}
+.group-card:active{transform:scale(0.96)}
+.group-card.active{border-color:var(--accent)}
+.group-card .g-num{font-size:18px;font-weight:700;color:var(--primary)}
+.group-card .g-count{font-size:12px;color:var(--text-light);margin-top:4px}
+.group-card .g-progress{font-size:11px;color:var(--success);margin-top:2px}
+.flashcard{perspective:1000px;min-height:280px;cursor:pointer}
+.flashcard-inner{position:relative;width:100%;height:100%;min-height:280px;transition:transform .5s;transform-style:preserve-3d}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.flashcard-front,.flashcard-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.flashcard-back{transform:rotateY(180deg)}
+.word-display{font-size:30px;font-weight:700;color:var(--primary);margin-bottom:6px}
+.word-ipa{font-size:16px;color:var(--accent);margin-bottom:10px;font-family:SF Pro Text,Georgia,Noto Sans,Lucida Sans Unicode,serif;line-height:1.4}
+.word-meaning{font-size:18px;color:var(--primary);font-weight:600;margin-bottom:12px}
+.word-example{font-size:14px;color:var(--text-light);line-height:1.6;padding:12px;background:#f8f9fa;border-radius:8px;text-align:left}
+.flip-hint{font-size:12px;color:#aaa;margin-top:14px}
+.quiz-option{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;font-size:15px;transition:all .2s}
+.quiz-option:active{transform:scale(0.98)}
+.quiz-option.correct{border-color:var(--success);background:#e8f5e9}
+.quiz-option.wrong{border-color:var(--danger);background:#ffebee}
+.progress-bar{height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--success);border-radius:4px;transition:width .3s}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stat-box{background:#f8f9fa;border-radius:10px;padding:12px;text-align:center}
+.stat-box .stat-num{font-size:22px;font-weight:700;color:var(--primary)}
+.stat-box .stat-label{font-size:11px;color:var(--text-light);margin-top:4px}
+.section-title{font-size:16px;font-weight:600;margin-bottom:12px;color:var(--primary)}
+.hide{display:none!important}
+.flex{display:flex}
+.justify-between{justify-content:space-between}
+.items-center{align-items:center}
+.gap-3{gap:12px}
+.mt-2{margin-top:8px}
+.mt-3{margin-top:12px}
+.mb-3{margin-bottom:12px}
+.text-center{text-align:center}
+.text-sm{font-size:13px}
+.text-xl{font-size:22px}
+.font-bold{font-weight:700}
+.text-primary{color:var(--primary)}
+.text-success{color:var(--success)}
+.text-danger{color:var(--danger)}
+.text-light{color:var(--text-light)}
+.w-full{width:100%}
+.quiz-type-label{display:inline-block;background:#f0f0f0;color:var(--primary);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;margin-bottom:12px}
+.quiz-prompt{font-size:24px;font-weight:700;color:var(--primary);margin-bottom:16px;text-align:center}
+.quiz-prompt-sm{font-size:18px;color:var(--text-light);margin-bottom:16px;text-align:center}
+.example-speaker{width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;color:white;font-size:24px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;vertical-align:middle;box-shadow:0 3px 10px rgba(56,160,212,0.35);transition:all .15s}
+.example-speaker:active{transform:scale(0.92)}
+</style>
+</head>
+<body>
+<header><h1>Vocab-Flashcard</h1>
+<div class="book-tabs">
+<button class="book-tab active" data-book="english" onclick="switchBook('english')">英語</button>
+<button class="book-tab" data-book="japanese" onclick="switchBook('japanese')">日語</button>
+</div>
+</header>
+<div class="container">
+<div id="dashboard">
+<div class="card">
+<div class="section-title" id="book-title">英語單詞本</div>
+<div class="stats-grid">
+<div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">總單詞</div></div>
+<div class="stat-box"><div class="stat-num" id="stat-mastered">0</div><div class="stat-label">已掌握</div></div>
+<div class="stat-box"><div class="stat-num" id="stat-groups">0</div><div class="stat-label">學習組</div></div>
+</div>
+<div class="mt-3"><div class="text-sm text-light">總體進度</div><div class="progress-bar mt-2"><div class="progress-fill" id="overall-progress" style="width:0%"></div></div></div>
+</div>
+<div class="section-title">選擇學習組</div>
+<div class="group-grid" id="group-grid"></div>
+</div>
+<div id="learn-mode" class="hide">
+<div class="card">
+<div class="flex justify-between items-center mb-3">
+<div class="text-sm text-light">學習組 <span id="learn-group-num">1</span></div>
+<div class="text-sm text-light"><span id="learn-progress">1</span> / <span id="learn-total">6</span></div>
+</div>
+<div class="progress-bar mb-3"><div class="progress-fill" id="learn-progress-bar" style="width:0%"></div></div>
+<div class="flex justify-center mt-3 mb-3"><button class="speaker-btn" onclick="speakCurrent()">&#x1F50A;</button></div>
+<div class="flashcard" id="flashcard" onclick="flipCard()">
+<div class="flashcard-inner" id="flashcard-inner">
+<div class="flashcard-front">
+<div class="word-display" id="card-word">word</div>
+<div class="word-ipa" id="card-ipa"></div>
+<div class="flip-hint">點擊翻轉查看意思與例句</div>
+</div>
+<div class="flashcard-back">
+<div class="word-meaning" id="card-meaning"></div>
+<div class="word-example" id="card-example"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="btn secondary btn-block" onclick="markUnknown()">&#x1F914; 不認識</button>
+<button class="btn success btn-block" onclick="markKnown()">&#x2713; 認識</button>
+</div>
+<button class="btn btn-block mt-3" onclick="endLearn()">結束學習，進入測驗</button>
+</div>
+<div id="test-mode" class="hide">
+<div class="card">
+<div class="flex justify-between items-center mb-3">
+<div class="text-sm text-light">測驗 <span id="test-group-num">1</span></div>
+<div class="text-sm text-light"><span id="test-progress">1</span> / <span id="test-total">6</span></div>
+</div>
+<div class="progress-bar mb-3"><div class="progress-fill" id="test-progress-bar" style="width:0%"></div></div>
+<div id="quiz-audio-area" class="text-center mb-3 hide"><button class="speaker-btn" onclick="speakTestPrompt()">&#x1F50A;</button><div class="quiz-prompt-sm mt-2">聽讀音，選對應單詞</div></div>
+<div class="quiz-type-label" id="quiz-label"></div>
+<div class="quiz-prompt" id="quiz-prompt"></div>
+<div id="quiz-options"></div>
+</div>
+</div>
+<div id="test-results" class="hide">
+<div class="card text-center">
+<div class="text-xl font-bold text-primary mb-2">測驗結果</div>
+<div class="stats-grid">
+<div class="stat-box"><div class="stat-num text-success" id="result-correct">0</div><div class="stat-label">正確</div></div>
+<div class="stat-box"><div class="stat-num text-danger" id="result-wrong">0</div><div class="stat-label">錯誤</div></div>
+<div class="stat-box"><div class="stat-num" id="result-rate">0%</div><div class="stat-label">正確率</div></div>
+</div>
+<div class="mt-3 text-sm text-light" id="result-message"></div>
+</div>
+<div class="card hide" id="wrong-words-card">
+<div class="section-title">需要複習的單詞</div>
+<div id="wrong-words-list"></div>
+</div>
+<button class="btn btn-block mt-3" onclick="backToDashboard()">返回學習組</button>
+</div>
+</div>
+<script>
+const BOOKS={"english":{"name":"英語單詞本","lang":"en-US","words":[{"word":"Steve Jobs","example":"We hope your team can become the \"Steve Jobs\" and \"Elon Musk\" of Kyoto -- creating new trends and defining what comes next.","ipa":"","meaning":"史蒂夫·賈伯斯"},{"word":"Elon Musk","example":"We hope your team can become the \"Steve Jobs\" and \"Elon Musk\" of Kyoto -- creating new trends and defining what comes next.","ipa":"","meaning":"伊隆·馬斯克"},{"word":"perspective","example":"What we hope from your team is a more future-facing perspective -- ideas that feel ahead of the market, not just aligned with it.","ipa":"","meaning":"觀點"},{"word":"align","example":"What we hope from your team is a more future-facing perspective -- ideas that feel ahead of the market, not just aligned with it.","ipa":"","meaning":"對齊"},{"word":"Origin","example":"For example, Kyoto mint carries cultural meaning and a strong sense of origin, while modern technology gives the product a more future-oriented feeling.","ipa":"","meaning":"起源"},{"word":"future-oriented","example":"For example, Kyoto mint carries cultural meaning and a strong sense of origin, while modern technology gives the product a more future-oriented feeling.","ipa":"","meaning":"面向未來"},{"word":"Revolutionary","example":"Our founder, Mr. GAN GEOK ENG, created White Flower Oil during a time when the product itself felt revolutionary.","ipa":"","meaning":"革命性的"},{"word":"inspiration","example":"Please use them as inspiration, then expand, refine, and develop something even more creative and meaningful.","ipa":"","meaning":"靈感"},{"word":"Original","example":"Also, the original [白花] name referred to narcissus because founder Mr.Gan favorite flower was narcissus, but [Flower Arrangement] (生け花) doesn't limit to one flower.","ipa":"","meaning":"原創"},{"word":"Structure","example":"Suggested structure: Premium（プレミアム） + Product Benefit + Product Type","ipa":"","meaning":"結構"},{"word":"Evolve","example":"This isn't just physical overuse -- it's mental overconsumption, so the upgrade direction evolves from body treatment into mental healing.","ipa":"","meaning":"演進"},{"word":"Kanji","example":"The kanji [白花] can be pronounced:hakka、shirohana、shirahana、shirobana、hakuka","ipa":"","meaning":"漢字"},{"word":"Correspond","example":"Hakka, shirakaba, shirakannba can also correspond to: 白華，白樺，白香 --all keep the character 白 (white) and extend the original meaning, so they work as upgraded brand names.","ipa":"","meaning":"對應"},{"word":"Hiragana","example":"Adding Japanese hiragana breaks up the boring all-Chinese-character look.","ipa":"","meaning":"平假名"},{"word":"Interpret","example":"Instead of removing the character completely, we hope to reinterpret it in a softer and more modern way.","ipa":"","meaning":"詮釋"},{"word":"Scenarios","example":"We've brainstormed products for modern daily scenarios. You can split them into separate items or combine them--adjust based on market needs.","ipa":"","meaning":"情境"},{"word":"Harmony","example":"Zen means body and mind influence each other as one. A troubled mind upsets the body, and an unbalanced body disturbs the mind--true health comes from harmony.","ipa":"","meaning":"和諧"},{"word":"Zen","example":"Zen means body and mind influence each other as one. A troubled mind upsets the body, and an unbalanced body disturbs the mind--true health comes from harmony.","ipa":"","meaning":"禪"},{"word":"Anxiety","example":"Modern people don't just suffer from physical problems like carsickness or mosquito bites, because anxiety, fatigue, and mental imbalance are much bigger issues today.","ipa":"","meaning":"焦慮"},{"word":"Fatigue","example":"Modern people don't just suffer from physical problems like carsickness or mosquito bites, because anxiety, fatigue, and mental imbalance are much bigger issues today.","ipa":"","meaning":"疲勞"},{"word":"Scene","example":"Scene one: The morning commute. That moment when you flip from sleep mode to full power.","ipa":"","meaning":"場景"},{"word":"Commute","example":"Scene one: The morning commute. That moment when you flip from sleep mode to full power.","ipa":"","meaning":"通勤"},{"word":"Mode","example":"Scene one: The morning commute. That moment when you flip from sleep mode to full power.","ipa":"","meaning":"模式"},{"word":"Associate","example":"The English words we associate with this are energy, dynamic, proactive power, lucky, money, and positive, because these express that fully-charged feeling.","ipa":"","meaning":"聯想"},{"word":"Dynamic","example":"The English words we associate with this are energy, dynamic, proactive power, lucky, money, and positive, because these express that fully-charged feeling.","ipa":"","meaning":"活力"},{"word":"Proactive","example":"The English words we associate with this are energy, dynamic, proactive power, lucky, money, and positive, because these express that fully-charged feeling.","ipa":"","meaning":"主動"},{"word":"Express","example":"The English words we associate with this are energy, dynamic, proactive power, lucky, money, and positive, because these express that fully-charged feeling.","ipa":"","meaning":"表達"},{"word":"fully-charged","example":"The English words we associate with this are energy, dynamic, proactive power, lucky, money, and positive, because these express that fully-charged feeling.","ipa":"","meaning":"充滿電力"},{"word":"Uninterrupted","example":"Deep work mode. Writing, designing, brainstorming -- when you need hours of uninterrupted focus.","ipa":"","meaning":"不受打擾"},{"word":"Mood","example":"Adjusting your mood.","ipa":"","meaning":"情緒"},{"word":"Unstable","example":"This is for moments when you feel unstable, angry, or anxious and you need to settle your emotions.","ipa":"","meaning":"不穩定"},{"word":"Anxious","example":"This is for moments when you feel unstable, angry, or anxious and you need to settle your emotions.","ipa":"","meaning":"焦慮"},{"word":"Ritual","example":"Imagine coming home from work and switching off your job mode as a daily ritual.","ipa":"","meaning":"儀式"},{"word":"Pamper","example":"The English words are treat, pamper, care, slow down, relax, and good sleep, because this is about that shift from busy to rest.","ipa":"","meaning":"寵愛"},{"word":"Joy","example":"In Japanese, 愉means joy.","ipa":"","meaning":"喜悅"},{"word":"Intimate","example":"This covers intimate moments with family, friends, partners, or colleagues.","ipa":"","meaning":"親密"},{"word":"warding off evil","example":"The English words are funeral, horrible, terrible, warding off evil, and life sucks, because we want to express cleaning bad vibes and boosting positive energy.","ipa":"","meaning":"驅邪"},{"word":"vibe","example":"The English words are funeral, horrible, terrible, warding off evil, and life sucks, because we want to express cleaning bad vibes and boosting positive energy.","ipa":"","meaning":"氛圍"},{"word":"Purification","example":"In Japanese, 淨 means purification.","ipa":"","meaning":"淨化"},{"word":"Emphasize","example":"We put ゆ (yu) first to emphasize function (not just ingredients), which feels more Zen.","ipa":"","meaning":"強調"},{"word":"Shrine","example":"So they take products to a shrine in [Kyoto] for blessings, which gives users more inner strength.","ipa":"","meaning":"神社"},{"word":"Preserve","example":"Preserve: We come from a GMP pharmaceutical background--this is our unique core asset. We'll turn pharmaceutical-grade standards into a competitive edge for daily care products.","ipa":"","meaning":"保留"},{"word":"Heritage","example":"Heritage: Modernize our classic ingredient (mint) and use it across different product categories.","ipa":"","meaning":"傳承"},{"word":"Precise","example":"Think of the body as a precise machine. Stress, blue light and irregular routines loosen the \"screws.\" Our job is to tighten them and bring body and mind back to optimal balance.","ipa":"","meaning":"精確"},{"word":"Irregular","example":"Think of the body as a precise machine. Stress, blue light and irregular routines loosen the \"screws.\" Our job is to tighten them and bring body and mind back to optimal balance.","ipa":"","meaning":"不規律"},{"word":"Screw","example":"Think of the body as a precise machine. Stress, blue light and irregular routines loosen the \"screws.\" Our job is to tighten them and bring body and mind back to optimal balance.","ipa":"","meaning":"螺絲"},{"word":"Optimal","example":"Think of the body as a precise machine. Stress, blue light and irregular routines loosen the \"screws.\" Our job is to tighten them and bring body and mind back to optimal balance.","ipa":"","meaning":"最佳"},{"word":"Medical Aesthetics","example":"Take Medical Aesthetics and Minimally Invasive Aesthetic, or Pressure Cooker and Micro-pressure Cooker as examples.","ipa":"","meaning":"醫學美容"},{"word":"Minimally Invasive Aesthetic","example":"Take Medical Aesthetics and Minimally Invasive Aesthetic, or Pressure Cooker and Micro-pressure Cooker as examples.","ipa":"","meaning":"微創美容"},{"word":"Category","example":"In each pair, the second is a new category transformed and upgraded from the first.","ipa":"","meaning":"類別"},{"word":"Using the same logic, White Flower Oil will evolve from medicalgrade treatment into daily gentle care, creating an entirely new product category.","example":"Mentholatum","ipa":"","meaning":"(例句)"},{"word":"[Mentholatum]: transformed from pharma into cosmetics successfully, so it turned medical trust into daily security, which built brand differentiation.","example":"Differentiation","ipa":"","meaning":"(例句)"},{"word":"[Mentholatum]: transformed from pharma into cosmetics successfully, so it turned medical trust into daily security, which built brand differentiation.","example":"Pharmaceuticals","ipa":"","meaning":"(例句)"},{"word":"SkinCeuticals: combines Skin and Pharmaceuticals, which represents professional science plus skincare technology, so [White Flower Oil] could create a similar herbal-plus-science compound word.","example":"Rhythm","ipa":"","meaning":"(例句)"},{"word":"First Aid Beauty: It takes the concept of first aid from the medical field and brings it into daily skincare.","example":"We can follow the same logic: expand our state rescue from headache relief to cover emotional balance, blue light defense, daily rhythm regulation, and more.","ipa":"","meaning":"(例句)"},{"word":"Insect","example":"The original White Flower Oil solved basic physical problems: motion sickness, burns, and insect bites. These were physical injuries that needed physical relief.","ipa":"","meaning":"昆蟲"},{"word":"Melatonin","example":"Screens messing with melatonin, causing sleep and metabolism problems","ipa":"","meaning":"褪黑激素"},{"word":"metabolism","example":"Screens messing with melatonin, causing sleep and metabolism problems","ipa":"","meaning":"新陳代謝"},{"word":"Exhaustion","example":"Emotional exhaustion from social media and work stress","ipa":"","meaning":"耗竭"},{"word":"Chronic","example":"Chronic mental fatigue from being \"always online\"","ipa":"","meaning":"慢性"},{"word":"fatigue","example":"Chronic mental fatigue from being \"always online\"","ipa":"","meaning":"疲勞"},{"word":"Strain","example":"This is too much physical and mental strain.","ipa":"","meaning":"壓力/緊張"},{"word":"Polyphenols","example":"Tea polyphenols are our core new ingredient, perfectly matched to modern lifestyles.","ipa":"","meaning":"多酚"},{"word":"antioxidant","example":"Powerful antioxidant: EGCG is one of the strongest natural antioxidants--fights free radicals and reduces cell damage from blue light.","ipa":"","meaning":"抗氧化"},{"word":"Radical","example":"Powerful antioxidant: EGCG is one of the strongest natural antioxidants--fights free radicals and reduces cell damage from blue light.","ipa":"","meaning":"自由基"},{"word":"Circadian","example":"Regulate circadian rhythm: balances cortisol levels and fixes sleep-wake cycles disruptd by devices.","ipa":"","meaning":"晝夜節律"},{"word":"Rhythm","example":"Regulate circadian rhythm: balances cortisol levels and fixes sleep-wake cycles disruptd by devices.","ipa":"","meaning":"節奏"},{"word":"Cortisol","example":"Regulate circadian rhythm: balances cortisol levels and fixes sleep-wake cycles disruptd by devices.","ipa":"","meaning":"皮質醇"},{"word":"disrupt","example":"Regulate circadian rhythm: balances cortisol levels and fixes sleep-wake cycles disruptd by devices.","ipa":"","meaning":""},{"word":"Anti-inflammatory","example":"Anti-inflammatory & soothing: lowers chronic inflammation, relieves stress-related skin sensitivity and mood irritation.","ipa":"","meaning":"抗炎"},{"word":"inflammation","example":"Anti-inflammatory & soothing: lowers chronic inflammation, relieves stress-related skin sensitivity and mood irritation.","ipa":"","meaning":"發炎"},{"word":"sensitivity","example":"Anti-inflammatory & soothing: lowers chronic inflammation, relieves stress-related skin sensitivity and mood irritation.","ipa":"","meaning":"敏感"},{"word":"irritation","example":"Anti-inflammatory & soothing: lowers chronic inflammation, relieves stress-related skin sensitivity and mood irritation.","ipa":"","meaning":"刺激"},{"word":"mature","example":"The sunscreen market is already fully mature, but blue light protection is still an emerging category in daily care.","ipa":"","meaning":"成熟"},{"word":"emerging","example":"The sunscreen market is already fully mature, but blue light protection is still an emerging category in daily care.","ipa":"","meaning":"新興"},{"word":"portable","example":"It's a portable indoor shield you can take anywhere and use anytime.","ipa":"","meaning":"便攜"},{"word":"shield","example":"It's a portable indoor shield you can take anywhere and use anytime.","ipa":"","meaning":"防護盾"},{"word":"suppress","example":"Using electronics before bed suppresses melatonin, which leads to trouble falling asleep and poor sleep quality.","ipa":"","meaning":"抑制"},{"word":"melatonin","example":"Using electronics before bed suppresses melatonin, which leads to trouble falling asleep and poor sleep quality.","ipa":"","meaning":""},{"word":"Metabolic","example":"Metabolic imbalance affecting energy use and weight management.","ipa":"","meaning":"代謝"},{"word":"weight","example":"Metabolic imbalance affecting energy use and weight management.","ipa":"","meaning":"體重"},{"word":"Hormone","example":"Hormone swings that cause skin breakouts and mood swings.","ipa":"","meaning":"荷爾蒙"},{"word":"aromatherapy","example":"Our new White Flower Oil formula works two ways: aromatherapy + tea polyphenols, to help your body reset --getting your body clock back to its natural rhythm.","ipa":"","meaning":"芳香療法"},{"word":"buffer","example":"Our product doesn't just calm you down--it creates an emotional buffer zone between stress and rest.","ipa":"","meaning":"緩衝"},{"word":"shift","example":"It's a portable state switcher that helps you shift from fight mode to repair mode.","ipa":"","meaning":"轉換"},{"word":"Dual Synergy","example":"We want to move beyond boring single-benefit or basic combined-benefit designs.","ipa":"","meaning":"雙重協同"},{"word":"Instead, we'll create more innovative products built around our concept of Dual Synergy.","example":"Activate","ipa":"","meaning":"(例句)"},{"word":"One side is Activate -- to energize you and boost confidence.","example":"track","ipa":"","meaning":"(例句)"},{"word":"Use it for interviews, long drives, focused work or study, and getting back on track after holidays.","example":"Soothe","ipa":"","meaning":"(例句)"},{"word":"The other side is Soothe -- to calm you down and ease stress.","example":"unwind","ipa":"","meaning":"(例句)"},{"word":"Use it before bed, when you feel anxious, or when you need to unwind.","example":"appeal","ipa":"","meaning":"(例句)"},{"word":"We want to follow current trends and create names with strong emotional appeal.","example":"trendy","ipa":"","meaning":"(例句)"},{"word":"For example, ON / OFF -- a pair of opposites that sounds digital, vivid and easy to remember.","example":"Or Active / Cooldown (CD), which comes from gaming -- it means using a skill and waiting for it to recharge. Both are trendy and modern.","ipa":"","meaning":"(例句)"},{"word":"Personification","example":"trait","ipa":"","meaning":"擬人化"},{"word":"We'll add personality & traits to each product, so every item becomes a one-of-a-kind friend.","example":"Personality","ipa":"","meaning":"(例句)"},{"word":"Take MBTI 16 Personalities as an example: 16 personality types match 16 vivid personas.","example":"engagement","ipa":"","meaning":"(例句)"},{"word":"White Flower Oil can build its own product personality system, making our products \"speak\" to users and strengthen connection and engagement.","example":"volume","ipa":"","meaning":"(例句)"},{"word":"We adopt a Pocket-friendly design. With volume under 30ml, it fits easily in handbags and makeup pouches for instant use anytime, anywhere.","example":"pouches","ipa":"","meaning":"(例句)"},{"word":"We adopt a Pocket-friendly design. With volume under 30ml, it fits easily in handbags and makeup pouches for instant use anytime, anywhere.","example":"conscious","ipa":"","meaning":"(例句)"},{"word":"We stay Eco-conscious. Made with eco-friendly materials and printing, the bottle supports a refillable system to reduce long-term environmental impact.","example":"refillable","ipa":"","meaning":"(例句)"},{"word":"We stay Eco-conscious. Made with eco-friendly materials and printing, the bottle supports a refillable system to reduce long-term environmental impact. As a perfect companion for digital devices, it is designed to pair well with phones and computers, ideal for use while operating electronics.","example":"safeguard","ipa":"","meaning":"(例句)"},{"word":"It offers gentle daily protection and blocks blue light to safeguard your skin.","example":"Compact","ipa":"","meaning":"(例句)"},{"word":"Compact and portable, it won't take up much space.","example":"portable","ipa":"","meaning":"(例句)"},{"word":"Compact and portable, it won't take up much space.","example":"Silver","ipa":"","meaning":"(例句)"},{"word":"Silver: It boasts a tech style and serves as a great companion for electronics.","example":"boast","ipa":"","meaning":"(例句)"},{"word":"Silver: It boasts a tech style and serves as a great companion for electronics.","example":"translucent","ipa":"","meaning":"(例句)"},{"word":"Visual symbol: A delicate small silver umbrella. When opened, it forms a translucent glowing shield.","example":"translucent","ipa":"","meaning":"(例句)"},{"word":"A translucent energy shield that forms an invisible armor on the skin.","example":"armor","ipa":"","meaning":"(例句)"},{"word":"A translucent energy shield that forms an invisible armor on the skin.","example":"invisible","ipa":"","meaning":"(例句)"},{"word":"It provides defense and protection, creating a lightweight, invisible skin layer with weightless coverage.","example":"Semi-transparent","ipa":"","meaning":"(例句)"},{"word":"Semi-transparent: It delivers invisible protection and stays reliable as your long-lasting companion.","example":"glance","ipa":"","meaning":"(例句)"},{"word":"Customers from English and Japanese markets get the brand message at a glance. We want to design a cross-cultural brand name with the same smart logic, easy to understand across cultures.","example":"scenario","ipa":"","meaning":"(例句)"},{"word":"write usage scenario copy","example":"tangible","ipa":"","meaning":""},{"word":"Product upgrades shall deliver tangible revenue growth, with performance quantified by data.","example":"revenue","ipa":"","meaning":"(例句)"},{"word":"Product upgrades shall deliver tangible revenue growth, with performance quantified by data.","example":"positioning","ipa":"","meaning":"(例句)"},{"word":"We rely on market research to define clear positioning and build unique differentiation.","example":"Differentiated","ipa":"","meaning":"(例句)"},{"word":"Differentiated Positioning","example":"Positioning","ipa":"","meaning":""},{"word":"Differentiated Positioning","example":"mainstream","ipa":"","meaning":""},{"word":"Medicated oil and essential oil are overly mainstream.","example":"priority","ipa":"","meaning":"(例句)"},{"word":"This is our top priority.","example":"brick-and-mortar","ipa":"","meaning":"(例句)"},{"word":"Compared with department stores, brick-and-mortar shops and other retail channels, what is our product differentiation?","example":"Stabilization","ipa":"","meaning":"(例句)"},{"word":"Skin Stabilization--Anti-inflammatory and repairing, keeps skin in a balanced state.","example":"Anti-inflammatory","ipa":"","meaning":"(例句)"},{"word":"Skin Stabilization--Anti-inflammatory and repairing, keeps skin in a balanced state.","example":"curiosity","ipa":"","meaning":"(例句)"},{"word":"Talkability: A globally popular new ingredient that satisfies consumers' curiosity.","example":"laid-back","ipa":"","meaning":"(例句)"},{"word":"Instead of a fixed shape, the bag can be adjusted freely, delivering a casual and laid-back vibe.","example":"vibe","ipa":"","meaning":"(例句)"},{"word":"Instead of a fixed shape, the bag can be adjusted freely, delivering a casual and laid-back vibe.","example":"wire","ipa":"","meaning":"(例句)"},{"word":"To make this flexible shaping possible, they added soft wire inside the bag.","example":"launch","ipa":"","meaning":"(例句)"},{"word":"Chanel has launched a new iteration of its new handbag with a highly avant-garde design.","example":"iteration","ipa":"","meaning":"(例句)"},{"word":"Chanel has launched a new iteration of its new handbag with a highly avant-garde design.","example":"avant-garde","ipa":"","meaning":"(例句)"},{"word":"Chanel has launched a new iteration of its new handbag with a highly avant-garde design.","example":"polarized","ipa":"","meaning":"(例句)"},{"word":"But after its launch, consumer feedback was extremely polarized.","example":"illustrate","ipa":"","meaning":"(例句)"},{"word":"This case illustrates an important point: if our idea is too ahead of its time, the current market cannot understand or accept it.","example":"backfire","ipa":"","meaning":"(例句)"},{"word":"It will only bring negative feedback and backfire on the brand.","example":"","ipa":"","meaning":"(例句)"}],"groups":[[0,1,2,3,4,5],[6,7,8,9,10,11],[12,13,14,15,16,17],[18,19,20,21,22,23],[24,25,26,27,28,29],[30,31,32,33,34,35],[36,37,38,39,40,41],[42,43,44,45,46,47],[48,49,50,51,52,53],[54,55,56,57,58,59],[60,61,62,63,64,65],[66,67,68,69,70,71],[72,73,74,75,76,77],[78,79,80,81,82,83],[84,85,86,87,88,89],[90,91,92,93,94,95],[96,97,98,99,100,101],[102,103,104,105,106,107],[108,109,110,111,112,113],[114,115,116,117,118,119],[120,121,122,123,124,125],[126,127,128,129,130,131],[132,133]],"groupSize":6},"japanese":{"name":"日語單詞本","lang":"ja-JP","words":[{"word":"バッグ","reading":"バッグ","romaji":"baggu","meaning_cn":"袋子；包包","meaning_en":"bag"},{"word":"ローマ字","reading":"ローマジ","romaji":"rōmaji","meaning_cn":"羅馬字","meaning_en":"roman letters"},{"word":"ひらがな","reading":"ひらがな","romaji":"hiragana","meaning_cn":"平假名","meaning_en":"hiragana"},{"word":"カタカナ","reading":"カタカナ","romaji":"katakana","meaning_cn":"片假名","meaning_en":"katakana"},{"word":"白花","reading":"はっか/しろはな","romaji":"hakka/shirohana","meaning_cn":"白花","meaning_en":"white flower"},{"word":"白い花","reading":"しろいはな","romaji":"shiroi hana","meaning_cn":"白色的花","meaning_en":"white flower"},{"word":"生け花","reading":"いけばな","romaji":"ikebana","meaning_cn":"插花；花道","meaning_en":"flower arrangement"},{"word":"白いけ花","reading":"しろいけばな","romaji":"shiro ikebana","meaning_cn":"白色插花","meaning_en":"white flower arrangement"},{"word":"ピュアホワイト","reading":"ピュアホワイト","romaji":"pyua howaito","meaning_cn":"純白","meaning_en":"pure white"},{"word":"ゆ","reading":"ゆ","romaji":"yu","meaning_cn":"愉/癒/楡/柚/遊","meaning_en":"joy/healing/elm/yuzu/play"},{"word":"楡","reading":"にれ","romaji":"nire","meaning_cn":"榆樹","meaning_en":"elm tree"},{"word":"柚","reading":"ゆず","romaji":"yuzu","meaning_cn":"柚子","meaning_en":"yuzu"},{"word":"遊","reading":"あそび/ゆう","romaji":"asobi/yū","meaning_cn":"遊玩","meaning_en":"play"},{"word":"愉","reading":"ゆ","romaji":"yu","meaning_cn":"愉快","meaning_en":"joy"},{"word":"癒","reading":"いやし/ゆ","romaji":"iyashi/yu","meaning_cn":"療癒","meaning_en":"healing"},{"word":"適","reading":"てき","romaji":"teki","meaning_cn":"適合","meaning_en":"suitable"},{"word":"アップグレード版","reading":"アップグレードばん","romaji":"appugurēdo ban","meaning_cn":"升級版","meaning_en":"upgrade version"},{"word":"プレミアム","reading":"プレミアム","romaji":"puremiamu","meaning_cn":"高級；優質","meaning_en":"premium"},{"word":"スージング","reading":"スージング","romaji":"sūjingu","meaning_cn":"舒緩","meaning_en":"soothing"},{"word":"ヒーリングボタニカル","reading":"ヒーリングボタニカル","romaji":"hīringu botanikaru","meaning_cn":"療癒植物","meaning_en":"healing botanical"},{"word":"身心一如","reading":"しんしんいちにょ","romaji":"shinshin ichinyo","meaning_cn":"身心合一","meaning_en":"body and mind as one"},{"word":"力","reading":"ちから","romaji":"chikara","meaning_cn":"力量","meaning_en":"power/strength"},{"word":"中","reading":"ちゅう/なか","romaji":"chū/naka","meaning_cn":"中間；之中","meaning_en":"middle/center"},{"word":"宙","reading":"ちゅう","romaji":"chū","meaning_cn":"空中","meaning_en":"space/mid-air"},{"word":"和やか","reading":"なごやか","romaji":"nagoyaka","meaning_cn":"和睦；融洽","meaning_en":"harmonious"},{"word":"平和","reading":"へいわ","romaji":"heiwa","meaning_cn":"和平","meaning_en":"peace"},{"word":"和","reading":"わ","romaji":"wa","meaning_cn":"和諧；日本","meaning_en":"harmony/Japan"},{"word":"癒し","reading":"いやし","romaji":"iyashi","meaning_cn":"療癒","meaning_en":"healing"},{"word":"愛","reading":"あい","romaji":"ai","meaning_cn":"愛","meaning_en":"love"},{"word":"浄","reading":"じょう","romaji":"jō","meaning_cn":"淨化","meaning_en":"purify/cleanse"},{"word":"陽","reading":"よう","romaji":"yō","meaning_cn":"陽；太陽","meaning_en":"yang/sun"},{"word":"ゆの白いけ花","reading":"ゆのしろいけばな","romaji":"yu no shiroi ikebana","meaning_cn":"愉之白花（品牌名）","meaning_en":"Yu no Shiroi Ikebana"},{"word":"禅","reading":"ぜん","romaji":"zen","meaning_cn":"禪","meaning_en":"zen"}],"groups":[[0,1,2,3,4,5],[6,7,8,9,10,11],[12,13,14,15,16,17],[18,19,20,21,22,23],[24,25,26,27,28,29],[30,31,32]],"groupSize":6}};
+const STORAGE_KEY='vocabFlashcardV7';
+function loadProgress(){try{var s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return{english:{wordStatus:{},currentGroup:0},japanese:{wordStatus:{},currentGroup:0}};}
+function saveProgress(p){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(p));}catch(e){}}
+var progress=loadProgress();
+var currentBook='english';
+var currentGroupIdx=0;
+var learnQueue=[],learnIndex=0;
+var testQueue=[],testIndex=0;
+var testResults={correct:[],wrong:[]};
+var currentQuizType=0;
+var isFlipped=false;
+function getBook(){return BOOKS[currentBook];}
+function getProg(){return progress[currentBook];}
+function switchBook(book){currentBook=book;document.querySelectorAll('.book-tab').forEach(function(t){t.classList.toggle('active',t.dataset.book===book);});showView('dashboard');renderDashboard();}
+function showView(view){['dashboard','learn-mode','test-mode','test-results'].forEach(function(id){document.getElementById(id).classList.toggle('hide',id!==view);});}
+function renderDashboard(){var book=getBook(),prog=getProg();document.getElementById('book-title').textContent=book.name;document.getElementById('stat-total').textContent=book.words.length;var mastered=0;Object.values(prog.wordStatus).forEach(function(s){if(s>=3)mastered++;});document.getElementById('stat-mastered').textContent=mastered;document.getElementById('stat-groups').textContent=book.groups.length;document.getElementById('overall-progress').style.width=(book.words.length?Math.round(mastered/book.words.length*100):0)+'%';var grid=document.getElementById('group-grid');grid.innerHTML='';book.groups.forEach(function(g,i){var m=g.filter(function(idx){return(prog.wordStatus[idx]||0)>=3;}).length;var div=document.createElement('div');div.className='group-card'+(i===prog.currentGroup?' active':'');div.innerHTML='<div class="g-num">'+(i+1)+'</div><div class="g-count">'+g.length+' 詞</div><div class="g-progress">'+m+'/'+g.length+'</div>';div.onclick=function(){startGroup(i);};grid.appendChild(div);});}
+function startGroup(idx){var book=getBook(),prog=getProg();currentGroupIdx=idx;prog.currentGroup=idx;saveProgress(progress);var group=book.groups[idx];learnQueue=[].concat(group);if(idx+1<book.groups.length){var next=book.groups[idx+1];var previewCount=Math.min(2,next.length);var shuffled=[].concat(next).sort(function(){return Math.random()-0.5;});shuffled.slice(0,previewCount).forEach(function(previewIdx){learnQueue.splice(Math.floor(Math.random()*(learnQueue.length+1)),0,previewIdx);});}learnIndex=0;isFlipped=false;showView('learn-mode');renderLearnCard();}
+function renderLearnCard(){var book=getBook();var word=book.words[learnQueue[learnIndex]];document.getElementById('learn-group-num').textContent=currentGroupIdx+1;document.getElementById('learn-progress').textContent=learnIndex+1;document.getElementById('learn-total').textContent=learnQueue.length;document.getElementById('learn-progress-bar').style.width=((learnIndex+1)/learnQueue.length*100)+'%';document.getElementById('card-word').textContent=word.word||'';document.getElementById('card-ipa').textContent=word.ipa?'/'+word.ipa+'/':'';document.getElementById('card-meaning').textContent='';document.getElementById('card-example').textContent='';document.getElementById('flashcard').classList.remove('flipped');isFlipped=false;}
+function flipCard(){if(isFlipped){isFlipped=false;document.getElementById('flashcard').classList.remove('flipped');document.getElementById('card-meaning').textContent='';document.getElementById('card-example').textContent='';return;}isFlipped=true;document.getElementById('flashcard').classList.add('flipped');var book=getBook();var word=book.words[learnQueue[learnIndex]];var meaningEl=document.getElementById('card-meaning');var exampleEl=document.getElementById('card-example');if(currentBook==='english'){meaningEl.textContent=word.meaning||'';exampleEl.innerHTML=(word.example?'<button class="example-speaker" onclick="event.stopPropagation();speakExample()">&#x1F50A;</button> ':'')+(word.example||'');}else{meaningEl.textContent=(word.meaning_cn||'')+(word.meaning_en?' / '+word.meaning_en:'');exampleEl.textContent=word.romaji?'Romaji: '+word.romaji:'';}}
+function speakCurrent(){var book=getBook(),word=book.words[learnQueue[learnIndex]];speak(word.word,book.lang);}
+function speakExample(){var book=getBook(),word=book.words[learnQueue[learnIndex]];if(word.example)speak(word.example,book.lang);}
+function speakTestPrompt(){var book=getBook(),word=book.words[testQueue[testIndex]];speak(word.word,book.lang);}
+var _voices=[];var _voicesReady=false;
+function initVoices(){_voices=window.speechSynthesis.getVoices();if(_voices.length>0)_voicesReady=true;}
+if(window.speechSynthesis){initVoices();if('onvoiceschanged' in window.speechSynthesis)window.speechSynthesis.onvoiceschanged=initVoices;}
+function pickVoice(lang){if(!_voicesReady)initVoices();var exact=_voices.find(function(v){return v.lang===lang;});if(exact)return exact;var prefix=_voices.find(function(v){return v.lang&&v.lang.startsWith(lang.split('-')[0]);});return prefix||_voices[0]||null;}
+function speak(text,lang){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=0.9;u.pitch=1.0;var v=pickVoice(lang);if(v)u.voice=v;window.speechSynthesis.speak(u);}
+function markKnown(){var prog=getProg(),idx=learnQueue[learnIndex];var s=prog.wordStatus[idx]||0;if(s<3)prog.wordStatus[idx]=s+1;saveProgress(progress);nextLearn();}
+function markUnknown(){var prog=getProg(),idx=learnQueue[learnIndex];var s=prog.wordStatus[idx]||0;if(s>0)prog.wordStatus[idx]=s-1;saveProgress(progress);nextLearn();}
+function nextLearn(){learnIndex++;if(learnIndex>=learnQueue.length){endLearn();return;}renderLearnCard();}
+function endLearn(){var book=getBook();testQueue=[].concat(book.groups[currentGroupIdx]).sort(function(){return Math.random()-0.5;});testIndex=0;testResults={correct:[],wrong:[]};showView('test-mode');renderTest();}
+
+function renderTest(){
+  var book=getBook();
+  var word=book.words[testQueue[testIndex]];
+  document.getElementById('test-group-num').textContent=currentGroupIdx+1;
+  document.getElementById('test-progress').textContent=testIndex+1;
+  document.getElementById('test-total').textContent=testQueue.length;
+  document.getElementById('test-progress-bar').style.width=((testIndex+1)/testQueue.length*100)+'%';
+
+  // Pick quiz type: 0=audio, 1=meaning-to-word, 2=word-to-meaning
+  var types=[];
+  // Only add audio if word has no long sentence (actual word)
+  if(currentBook==='english'||currentBook==='japanese')types.push(0);
+  types.push(1);
+  types.push(2);
+  currentQuizType=types[Math.floor(Math.random()*types.length)];
+
+  var labelEl=document.getElementById('quiz-label');
+  var promptEl=document.getElementById('quiz-prompt');
+  var audioArea=document.getElementById('quiz-audio-area');
+  var optsContainer=document.getElementById('quiz-options');
+  optsContainer.innerHTML='';
+
+  if(currentQuizType===0){
+    labelEl.textContent='聽讀音選單詞';
+    promptEl.textContent='??';
+    audioArea.classList.remove('hide');
+    // Auto-play after short delay
+    setTimeout(function(){speak(word.word,book.lang);},300);
+    var opts=genWordOpts(testQueue[testIndex]);
+    opts.forEach(function(opt){var div=document.createElement('div');div.className='quiz-option';div.textContent=opt.text;div.dataset.correct=opt.correct;div.onclick=function(){selectOpt(div,opt.correct);};optsContainer.appendChild(div);});
+  }else if(currentQuizType===1){
+    labelEl.textContent='選對應單詞';
+    if(currentBook==='english'){
+      promptEl.textContent=word.meaning||'??';
+    }else{
+      promptEl.textContent=(word.meaning_cn||word.word);
+    }
+    audioArea.classList.add('hide');
+    var opts=genWordOpts(testQueue[testIndex]);
+    opts.forEach(function(opt){var div=document.createElement('div');div.className='quiz-option';div.textContent=opt.text;div.dataset.correct=opt.correct;div.onclick=function(){selectOpt(div,opt.correct);};optsContainer.appendChild(div);});
+  }else{
+    labelEl.textContent='選中文意思';
+    promptEl.textContent=word.word;
+    audioArea.classList.add('hide');
+    var opts=genMeaningOpts(testQueue[testIndex]);
+    opts.forEach(function(opt){var div=document.createElement('div');div.className='quiz-option';div.textContent=opt.text;div.dataset.correct=opt.correct;div.onclick=function(){selectOpt(div,opt.correct);};optsContainer.appendChild(div);});
+  }
+}
+
+function genWordOpts(correctIdx){
+  var book=getBook();
+  var cw=book.words[correctIdx];
+  var correctText=currentBook==='english'?cw.word:cw.word;
+  var allIdx=[];
+  for(var g=Math.max(0,currentGroupIdx-1);g<Math.min(book.groups.length,currentGroupIdx+2);g++)
+    allIdx=allIdx.concat(book.groups[g]);
+  var dist=allIdx.filter(function(i){return i!==correctIdx;}).sort(function(){return Math.random()-0.5;}).slice(0,10);
+  var opts=[{text:correctText,correct:true}];
+  for(var i=0;i<dist.length;i++){
+    if(opts.length>=4)break;
+    var w=book.words[dist[i]];
+    var t=currentBook==='english'?w.word:w.word;
+    if(t&&t!==correctText&&t.length>1)opts.push({text:t,correct:false});
+  }
+  // Fallback: if not enough, pick any random word
+  if(opts.length<4){
+    for(var i=0;i<book.words.length&&opts.length<4;i++){
+      if(i!==correctIdx){
+        var t=book.words[i].word;
+        if(t&&t!==correctText)opts.push({text:t,correct:false});
+      }
+    }
+  }
+  return opts.sort(function(){return Math.random()-0.5;});
+}
+
+function genMeaningOpts(correctIdx){
+  var book=getBook();
+  var cw=book.words[correctIdx];
+  var correctText=currentBook==='english'?(cw.meaning||cw.word):(cw.meaning_cn||cw.word);
+  var allIdx=[];
+  for(var g=Math.max(0,currentGroupIdx-1);g<Math.min(book.groups.length,currentGroupIdx+2);g++)
+    allIdx=allIdx.concat(book.groups[g]);
+  var dist=allIdx.filter(function(i){return i!==correctIdx;}).sort(function(){return Math.random()-0.5;}).slice(0,10);
+  var opts=[{text:correctText,correct:true}];
+  for(var i=0;i<dist.length;i++){
+    if(opts.length>=4)break;
+    var w=book.words[dist[i]];
+    var t=currentBook==='english'?(w.meaning||w.word):(w.meaning_cn||w.word);
+    if(t&&t!==correctText&&t.length>1)opts.push({text:t,correct:false});
+  }
+  if(opts.length<4){
+    for(var i=0;i<book.words.length&&opts.length<4;i++){
+      if(i!==correctIdx){
+        var t=currentBook==='english'?book.words[i].meaning||book.words[i].word:book.words[i].meaning_cn||book.words[i].word;
+        if(t&&t!==correctText)opts.push({text:t,correct:false});
+      }
+    }
+  }
+  return opts.sort(function(){return Math.random()-0.5;});
+}
+
+function selectOpt(el,isCorrect){
+  var prog=getProg(),idx=testQueue[testIndex];
+  document.querySelectorAll('.quiz-option').forEach(function(opt){opt.style.pointerEvents='none';if(opt.dataset.correct==='true')opt.classList.add('correct');});
+  if(isCorrect){el.classList.add('correct');testResults.correct.push(idx);var s=prog.wordStatus[idx]||0;if(s<3)prog.wordStatus[idx]=s+1;}
+  else{el.classList.add('wrong');testResults.wrong.push(idx);var s=prog.wordStatus[idx]||0;if(s>0)prog.wordStatus[idx]=s-1;}
+  saveProgress(progress);
+  setTimeout(function(){testIndex++;if(testIndex>=testQueue.length)showResults();else renderTest();},900);
+}
+
+function showResults(){
+  showView('test-results');
+  var c=testResults.correct.length,w=testResults.wrong.length,t=testQueue.length;
+  var rate=t?Math.round(c/t*100):0;
+  document.getElementById('result-correct').textContent=c;
+  document.getElementById('result-wrong').textContent=w;
+  document.getElementById('result-rate').textContent=rate+'%';
+  var msg=rate>=90?'太棒了！這組已經掌握得差不多了。':rate>=70?'不錯！錯誤的單詞會在下一組繼續出現。':'需要加強！錯誤單詞已加入複習列表。';
+  document.getElementById('result-message').textContent=msg;
+  var wrongCard=document.getElementById('wrong-words-card');
+  var wrongList=document.getElementById('wrong-words-list');
+  if(testResults.wrong.length>0){
+    wrongCard.classList.remove('hide');
+    wrongList.innerHTML='';
+    var book=getBook();
+    testResults.wrong.forEach(function(idx){
+      var w=book.words[idx];
+      var div=document.createElement('div');
+      div.className='mt-2';
+      if(currentBook==='english'){
+        div.innerHTML='<strong>'+w.word+'</strong> '+(w.ipa?'('+w.ipa+')':'')+(w.meaning?' ['+w.meaning+']':'')+': '+(w.example?w.example.substring(0,80):'');
+      }else{
+        div.innerHTML='<strong>'+w.word+'</strong> '+(w.reading?'('+w.reading+')':'')+': '+(w.meaning_cn||'');
+      }
+      wrongList.appendChild(div);
+    });
+  }else wrongCard.classList.add('hide');
+}
+function backToDashboard(){showView('dashboard');renderDashboard();}
+document.addEventListener('DOMContentLoaded',function(){renderDashboard();if(window.speechSynthesis){initVoices();if('onvoiceschanged' in window.speechSynthesis)window.speechSynthesis.onvoiceschanged=initVoices;}});
+</script>
+</body>
+</html>
